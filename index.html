@@ -1,0 +1,118 @@
+<html>
+	<head>
+		<title>My first Three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+        <script src="js/MTLLoader.js"></script>
+        <script src="js/OBJMTLLoader.js"></script>
+        
+		<script>
+			var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+            
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+            
+            window.addEventListener( 'resize', onWindowResize, false );
+            /*
+            var size = 0.65;
+
+            lavamaterial = new THREE.ShaderMaterial( {
+
+                uniforms: uniforms,
+                vertexShader: document.getElementById( 'vertexShader' ).textContent,
+                fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+
+            } );
+            */
+            
+            var manager = new THREE.LoadingManager();
+            manager.onProgress = function ( item, loaded, total ) {
+                console.log( item, loaded, total );
+            };
+            
+            var loader = new THREE.OBJMTLLoader( manager );
+            var cube = null;
+            loader.load('obj/K.obj', 'obj/K.mtl', function(object) {
+                
+                /*object.traverse(function(child) {
+                    if(child instanceof THREE.Mesh) {
+                        child.material = lavamaterial;
+                    }
+                });*/
+                
+                cube = object;
+                cube.position.set(0, 0, 0);
+                
+                scene.add(cube);
+            });
+            
+            var light = new THREE.PointLight( 0xffffff, 1, 200 );
+            light.position.set (0, 0, 0);
+            
+            geometry = new THREE.SphereGeometry( 0.2, 3, 3 );
+            material = new THREE.MeshBasicMaterial ( { color: 0xffffff } );
+            var sphere = new THREE.Mesh( geometry, material );
+            light.add( sphere );
+            //scene.add( light );
+            
+            var amlight = new THREE.AmbientLight ( 0x222222 );
+            scene.add( amlight );
+            
+            
+            var spotlight1 = new THREE.DirectionalLight(0xffffff, 0.5);
+            spotlight1.position.set(8, 10, 10);
+            scene.add(spotlight1);
+            
+            var spotlight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+            spotlight2.position.set(-8, 10, 10);
+            scene.add(spotlight2);
+            
+            var spotlight3 = new THREE.DirectionalLight(0xffffff, 0.5);
+            spotlight3.position.set(0, -10, 20);
+            scene.add(spotlight3);
+            
+            var pos = 10;
+            
+            camera.position.z = pos;
+            //camera.position.x = 0;
+            
+            light.position.set(0, 0, 7);
+            var frame = 0;
+            
+            
+            function render() {
+                requestAnimationFrame( render );
+                renderer.render( scene, camera );
+                
+                if(cube) {
+                    //cube.rotation.x += 0.01;
+                    cube.rotation.y += 0.01;
+                    cube.rotation.z += 0.003;
+                    cube.rotation.x += 0.0025;
+                }
+                    
+                //light.position.x = Math.cos(frame * 0.01) * pos;
+                //light.position.y = Math.sin(frame * 0.01) * pos;
+                //light.position.z = Math.sin(frame * 0.01) * pos;
+                //camera.position.z += 0.02;
+                frame += 1;
+            }
+            
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+            
+            render();
+		</script>
+	</body>
+</html>
