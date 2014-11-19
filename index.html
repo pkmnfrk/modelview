@@ -60,13 +60,20 @@
             } );
             */
             
+            var mats = [];
             
-            var rainbowMaterial = new THREE.MeshPhongMaterial( {
-                ambient: 0x222222,
-                color: HSVtoRGB(0, 255, 255),
-                shininess: 150,
-                shading: THREE.SmoothShading
-            });
+            for(var i = 0; i < 8; i++) {
+                foo = new THREE.MeshPhongMaterial( {
+                    ambient: 0x222222,
+                    color: new THREE.Color().setHSL(i / 8.0, 1, 0.5),
+                    shininess: 150,
+                    shading: THREE.SmoothShading
+                });
+                
+                mats.push(foo);
+            }
+            
+            
             
             
             //rainbowMaterial.lights = true;
@@ -79,29 +86,49 @@
             var loader = new THREE.OBJMTLLoader( manager );
             var cube = null;
             loader.load('obj/K.obj', 'obj/K.mtl', function(object) {
-                
-                object.traverse(function(child) {
-                    if(child instanceof THREE.Mesh) {
-                        if(child.material.name == "Rainbow") {
-                            child.material = rainbowMaterial;
-                        }
-                    }
-                });
+                var mat = 0;
                 
                 cube = object;
                 cube.position.set(0, 0, 0);
                 cube.rotation.z = 2 * Math.PI;
                 cube.rotation.y = 3 * Math.PI / 2;
-                scene.add(cube);
+                //scene.add(cube);
+                
+                for(var i = 0; i < 50; i++) {
+                    var logo = cube.clone();
+                    var lastchild = null;
+                    
+                    logo.traverse(function(child) {
+                        if(child instanceof THREE.Mesh) {
+                            if(child.material.name == "Rainbow") {
+                                child.material = mats[i % mats.length];
+                                //console.log(i % mats.length);
+                            }
+                        }
+                    });
+                    
+                    logo.position.set(Math.random() * 300 - 150, Math.random() * 220 - 100, -100);
+                    
+                    logo.rspeed = Math.random() * 3 - 1.5;
+                    logo.vspeed = Math.random() * 3 + 1;
+                    logo.qspeed = Math.random() * 2 - 1;
+
+                    scene.add(logo);
+                    logos.push(logo);
+                }
             });
             
-            var light = new THREE.PointLight( 0xffffff, 1, 200 );
-            light.position.set (0, 0, 0);
+            var logos = [];
             
-            geometry = new THREE.SphereGeometry( 0.2, 3, 3 );
-            material = new THREE.MeshBasicMaterial ( { color: 0xffffff } );
-            var sphere = new THREE.Mesh( geometry, material );
-            light.add( sphere );
+            
+            
+            //var light = new THREE.PointLight( 0xffffff, 1, 200 );
+            //light.position.set (0, 0, 0);
+            
+            //geometry = new THREE.SphereGeometry( 0.2, 3, 3 );
+            //material = new THREE.MeshBasicMaterial ( { color: 0xffffff } );
+            //var sphere = new THREE.Mesh( geometry, material );
+            //light.add( sphere );
             //scene.add( light );
             
             var amlight = new THREE.AmbientLight ( 0x222222 );
@@ -125,13 +152,14 @@
             camera.position.z = pos;
             //camera.position.x = 0;
             
-            light.position.set(0, 0, 7);
+            //light.position.set(0, 0, 7);
             var frame = 0;
             
-            
+            var hueadd = 1/3600 * 2;
             
             
             function render() {
+                var i;
                 requestAnimationFrame( render );
                 
                 frame += 1;
@@ -139,16 +167,36 @@
                 //rainbowMaterial.uniforms.time.value = frame;
                 //rainbowMaterial.uniforms.width.value = 500;
                 //rainbowMaterial.uniforms.left.value = window.innerWidth / 2 - 250;
-                rainbowMaterial.color.setHSL((frame % 3600) / 3600, 1, 0.5);
+                for(i = 0; i < mats.length; i++) {
+                    //console.log(mats[i].color.r);
+                    mats[i].color.offsetHSL(hueadd, 0, 0);
+                }
                 
                 renderer.render( scene, camera );
                 
-                if(cube) {
-                    cube.rotation.x += 0.01;
-                    cube.rotation.y += 0.003;
-                    //cube.rotation.z += 0.01;
+                for(i = 0; i < logos.length; i++) {
+                    var logo = logos[i];
                     
+                    logo.position.y -= logo.vspeed / 60;
+                    logo.rotation.y += logo.rspeed / 60;
+                    logo.rotation.x += logo.qspeed / 60;
+                    
+                    if(logo.position.y < -100) {
+                        logo.position.set(Math.random() * 300 - 150, Math.random() * 200, -100);
+                    
+                        logo.rspeed = Math.random() * 3 - 1.5;
+                        logo.qspeed = Math.random() * 2 - 1;
+                        logo.vspeed = Math.random() * 3 + 1;
+
+                    }
                 }
+                
+                //if(cube) {
+                //    cube.rotation.x += 0.01;
+                //    cube.rotation.y += 0.003;
+                //    //cube.rotation.z += 0.01;
+                    
+                //}
                     
                 //light.position.x = Math.cos(frame * 0.01) * pos;
                 //light.position.y = Math.sin(frame * 0.01) * pos;
